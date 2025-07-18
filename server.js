@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080; // Railway suele usar 8080 como default
 const rooms = {}; // { roomId: [socketId1, socketId2, ...] }
 
 app.use(express.static(path.join(__dirname, 'public')));
