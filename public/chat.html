@@ -17,6 +17,11 @@
       margin: 0 auto;
     }
 
+    h2 {
+      margin-bottom: 0.5rem;
+      color: #ff77d0;
+    }
+
     #chat-box {
       border: 1px solid #444;
       border-radius: 10px;
@@ -52,10 +57,30 @@
     }
 
     #room-link {
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       font-size: 0.9rem;
       color: #ccc;
       word-break: break-word;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    #copy-button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      background-color: #4f46e5;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #copy-button:hover {
+      background-color: #5a53f0;
     }
 
     .toast {
@@ -101,7 +126,11 @@
 <body>
   <main>
     <h2>Sala: <span id="room-id"></span></h2>
-    <div id="room-link">Enlace: <span id="room-url"></span></div>
+    
+    <div id="room-link">
+      Enlace: <span id="room-url"></span>
+      <button id="copy-button">Copiar</button>
+    </div>
 
     <div id="chat-box" class="chat-box"></div>
 
@@ -121,6 +150,24 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const roomId = window.location.pathname.split("/").pop();
+    document.getElementById("room-id").textContent = roomId;
+    const roomURL = `${window.location.origin}/chat/${roomId}`;
+    document.getElementById("room-url").textContent = roomURL;
+
+    document.getElementById("copy-button").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(roomURL);
+        const btn = document.getElementById("copy-button");
+        const prev = btn.textContent;
+        btn.textContent = "Copiado ✅";
+        setTimeout(() => btn.textContent = prev, 2000);
+      } catch (err) {
+        alert("No se pudo copiar el enlace");
+      }
+    });
+  </script>
   <script src="scripts/chat.js"></script>
 </body>
 </html>
