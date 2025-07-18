@@ -8,38 +8,79 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = process.env.PORT || 8080; // Railway suele usar 8080 como default
-const rooms = {}; // { roomId: [socketId1, socketId2, ...] }
+const PORT = process.env.PORT || 8080;
+const rooms = {}; // { roomId: [socketId, ...] }
+const socketUserMap = {}; // socket.id -> username
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', ({ roomId, username }) => {
-    if (!rooms[roomId]) rooms[roomId] = [];
+    const socketsInRoom = rooms[roomId] || [];
 
-    if (rooms[roomId].length >= 10) {
+    if (socketsInRoom.length >= 10) {
       socket.emit('roomFull');
       return;
     }
 
-    socket.join(roomId);
+    // Guardar temporalmente el username
     socket.username = username;
     socket.roomId = roomId;
-    rooms[roomId].push(socket.id);
+    socketUserMap[socket.id] = username;
 
-    io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha unido.` });
+    if (socketsInRoom.length === 0) {
+      // Si la sala está vacía, se une directamente (es el anfitrión)
+      rooms[roomId] = [socket.id];
+      socket.join(roomId);
+      io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha unido.` });
+    } else {
+      // Enviar solicitud al anfitrión para que acepte/rechace
+      const hostSocketId = socketsInRoom[0]; // el primero es el anfitrión
+      io.to(hostSocketId).emit('joinRequest', {
+        requesterId: socket.id,
+        requesterName: username
+      });
+    }
+
+    // Respuesta del anfitrión
+    socket.on('joinResponse', ({ requesterId, accepted }) => {
+      const targetSocket = io.sockets.sockets.get(requesterId);
+      if (!targetSocket) return;
+
+      if (accepted) {
+        rooms[roomId].push(requesterId);
+        targetSocket.join(roomId);
+        io.to(roomId).emit('message', {
+          sender: 'Sollo',
+          text: `${socketUserMap[requesterId]} se ha unido.`
+        });
+      } else {
+        targetSocket.emit('joinRejected');
+        targetSocket.disconnect();
+      }
+    });
 
     socket.on('chatMessage', (msg) => {
-      io.to(roomId).emit('message', { sender: username, text: msg });
+      io.to(roomId).emit('message', {
+        sender: socket.username,
+        text: msg
+      });
     });
 
     socket.on('disconnect', () => {
-      const index = rooms[roomId]?.indexOf(socket.id);
-      if (index > -1) {
-        rooms[roomId].splice(index, 1);
-        io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} ha salido.` });
-        if (rooms[roomId].length === 0) delete rooms[roomId]; // autodestruir sala
+      const room = socket.roomId;
+      if (room && rooms[room]) {
+        const index = rooms[room].indexOf(socket.id);
+        if (index > -1) {
+          rooms[room].splice(index, 1);
+          io.to(room).emit('message', {
+            sender: 'Sollo',
+            text: `${socket.username} ha salido.`
+          });
+          if (rooms[room].length === 0) delete rooms[room];
+        }
       }
+      delete socketUserMap[socket.id];
     });
   });
 });
