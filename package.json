@@ -1,0 +1,22 @@
+{
+  "name": "chattt",
+  "version": "1.0.0",
+  "description": "Sollo - Chat efímero y minimalista",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "chat",
+    "efímero",
+    "socket.io",
+    "minimalista",
+    "sollo"
+  ],
+  "author": "Juancho",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}
