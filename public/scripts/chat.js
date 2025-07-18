@@ -10,6 +10,17 @@ const username = localStorage.getItem('sollo_username') || 'Anónimo';
 
 document.getElementById('room-id').textContent = roomId;
 
+// Escapar HTML (pequeña protección XSS)
+function escapeHTML(str) {
+  return str.replace(/[&<>"']/g, match => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[match]);
+}
+
 socket.emit('joinRoom', { roomId, username });
 
 form.addEventListener('submit', (e) => {
@@ -18,12 +29,19 @@ form.addEventListener('submit', (e) => {
   if (message) {
     socket.emit('chatMessage', message);
     input.value = '';
+    input.focus();
   }
 });
 
 socket.on('message', ({ sender, text }) => {
   const msg = document.createElement('div');
-  msg.textContent = `[${sender}]: ${text}`;
+
+  if (sender === 'Sollo') {
+    msg.innerHTML = `<em><span style="color:#ff77d0;">${escapeHTML(text)}</span></em>`;
+  } else {
+    msg.innerHTML = `<strong>${escapeHTML(sender)}:</strong> ${escapeHTML(text)}`;
+  }
+
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
 });
@@ -31,31 +49,4 @@ socket.on('message', ({ sender, text }) => {
 socket.on('roomFull', () => {
   alert('Esta sala ya alcanzó el límite de 10 personas.');
   window.location.href = '/';
-});
-
-
-// ...código existente...
-const roomLink = document.getElementById('room-link');
-const toast = document.getElementById('user-toast');
-const toastMsg = document.getElementById('toast-message');
-const acceptBtn = document.getElementById('accept-user');
-const rejectBtn = document.getElementById('reject-user');
-
-// Mostrar el enlace para compartir
-roomLink.textContent = `${window.location.origin}/chat.html?room=${roomId}`;
-
-// Notificación tipo toast cuando alguien entra
-socket.on('userJoined', (newUser) => {
-  toastMsg.textContent = `${newUser} quiere unirse a la sala.`;
-  toast.style.display = 'block';
-
-  acceptBtn.onclick = () => {
-    socket.emit('acceptUser', { username: newUser });
-    toast.style.display = 'none';
-  };
-
-  rejectBtn.onclick = () => {
-    socket.emit('rejectUser', { username: newUser });
-    toast.style.display = 'none';
-  };
 });
