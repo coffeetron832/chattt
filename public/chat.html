@@ -55,6 +55,7 @@
       margin-top: 1rem;
       font-size: 0.9rem;
       color: #ccc;
+      word-break: break-word;
     }
 
     .toast {
@@ -67,7 +68,7 @@
       border-radius: 10px;
       box-shadow: 0 0 10px #000;
       z-index: 999;
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       animation: fadeIn 0.3s ease-out;
@@ -111,40 +112,15 @@
   </main>
 
   <!-- Notificación toast -->
-  <div id="toast" class="toast" style="display: none;">
+  <div id="toast" class="toast">
     <p><strong id="toast-username">Alguien</strong> quiere unirse</p>
     <div>
-      <button class="accept" onclick="handleAccept()">Aceptar</button>
-      <button class="reject" onclick="handleReject()">Rechazar</button>
+      <button class="accept" id="accept-btn">Aceptar</button>
+      <button class="reject" id="reject-btn">Rechazar</button>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="scripts/chat.js"></script>
-  <script>
-    // Mostrar el link
-    const roomId = new URLSearchParams(window.location.search).get("room");
-    document.getElementById("room-id").textContent = roomId;
-    document.getElementById("room-url").textContent = window.location.href;
-
-    // Toast ejemplo manual (reemplazar con socket real)
-    function showToast(nombre) {
-      document.getElementById("toast-username").textContent = nombre;
-      document.getElementById("toast").style.display = "block";
-    }
-
-    function handleAccept() {
-      document.getElementById("toast").style.display = "none";
-      // socket.emit('respuesta-invitacion', { aceptar: true });
-    }
-
-    function handleReject() {
-      document.getElementById("toast").style.display = "none";
-      // socket.emit('respuesta-invitacion', { aceptar: false });
-    }
-
-    // Simulación temporal de toast (para pruebas)
-    // setTimeout(() => showToast("Camilo"), 3000);
-  </script>
 </body>
 </html>
