@@ -32,3 +32,30 @@ socket.on('roomFull', () => {
   alert('Esta sala ya alcanzó el límite de 10 personas.');
   window.location.href = '/';
 });
+
+
+// ...código existente...
+const roomLink = document.getElementById('room-link');
+const toast = document.getElementById('user-toast');
+const toastMsg = document.getElementById('toast-message');
+const acceptBtn = document.getElementById('accept-user');
+const rejectBtn = document.getElementById('reject-user');
+
+// Mostrar el enlace para compartir
+roomLink.textContent = `${window.location.origin}/chat.html?room=${roomId}`;
+
+// Notificación tipo toast cuando alguien entra
+socket.on('userJoined', (newUser) => {
+  toastMsg.textContent = `${newUser} quiere unirse a la sala.`;
+  toast.style.display = 'block';
+
+  acceptBtn.onclick = () => {
+    socket.emit('acceptUser', { username: newUser });
+    toast.style.display = 'none';
+  };
+
+  rejectBtn.onclick = () => {
+    socket.emit('rejectUser', { username: newUser });
+    toast.style.display = 'none';
+  };
+});
