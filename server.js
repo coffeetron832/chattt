@@ -39,71 +39,85 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Guardar información en el socket
+    // Guardar info en socket
     socket.username = username;
     socket.roomId = roomId;
     socketUserMap[socket.id] = username;
 
-    // Si la sala no existe, crear y asignar host
+    // Sala no existe → se crea y este usuario es el host
     if (!rooms[roomId]) {
       rooms[roomId] = [socket.id];
       roomHostMap[roomId] = socket.id;
+
       socket.join(roomId);
       socket.accepted = true;
+
       socket.emit('youAreHost');
+      socket.emit('joinAccepted'); // Para permitir enviar mensajes
       io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} ha creado la sala.` });
 
-    } else if (wasAccepted || wasHost) {
-      // Reingreso tras recarga
+    } else if (wasAccepted) {
+      // Reingreso tras recarga (ya fue aceptado)
       rooms[roomId].push(socket.id);
       socket.join(roomId);
       socket.accepted = true;
-      if (wasHost && roomHostMap[roomId] !== socket.id) {
+
+      if (wasHost || roomHostMap[roomId] === socket.id) {
         roomHostMap[roomId] = socket.id;
         socket.emit('youAreHost');
       }
+
+      socket.emit('joinAccepted'); // Le permite escribir
       io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha reconectado.` });
 
     } else {
-      // Solicitud de ingreso a anfitrión
+      // Solicitud a anfitrión
       const hostSocketId = roomHostMap[roomId] || rooms[roomId][0];
       socket.emit('waitingApproval');
-      io.to(hostSocketId).emit('joinRequest', { requesterId: socket.id, requesterName: username });
+      io.to(hostSocketId).emit('joinRequest', {
+        requesterId: socket.id,
+        requesterName: username
+      });
     }
   });
 
-  // Manejar respuesta del anfitrión
+  // Respuesta del anfitrión
   socket.on('joinResponse', ({ requesterId, accepted }) => {
-  const targetSocket = io.sockets.sockets.get(requesterId);
-  if (!targetSocket) return;
+    const targetSocket = io.sockets.sockets.get(requesterId);
+    if (!targetSocket) return;
 
-  const roomId = socket.roomId;
-  if (accepted) {
-    rooms[roomId].push(requesterId);
-    targetSocket.join(roomId);
-    targetSocket.accepted = true;
+    const roomId = socket.roomId;
+    if (accepted) {
+      rooms[roomId].push(requesterId);
+      targetSocket.join(roomId);
+      targetSocket.accepted = true;
+      targetSocket.emit('joinAccepted');
+      io.to(roomId).emit('message', {
+        sender: 'Sollo',
+        text: `${socketUserMap[requesterId]} se ha unido.`
+      });
+    } else {
+      targetSocket.emit('joinRejected');
+      targetSocket.disconnect();
+    }
+  });
 
-    // 🔑 Esta línea permite que el usuario pueda escribir
-    targetSocket.emit('joinAccepted');
-
-    io.to(roomId).emit('message', { sender: 'Sollo', text: `${socketUserMap[requesterId]} se ha unido.` });
-  } else {
-    targetSocket.emit('joinRejected');
-    targetSocket.disconnect();
-  }
-});
-
-
-  // Mensajes de chat
+  // Chat
   socket.on('chatMessage', (msg) => {
     if (!socket.accepted) {
-      socket.emit('message', { sender: 'Sollo', text: 'Debes esperar a ser aceptado para enviar mensajes.' });
+      socket.emit('message', {
+        sender: 'Sollo',
+        text: 'Debes esperar a ser aceptado para enviar mensajes.'
+      });
       return;
     }
-    io.to(socket.roomId).emit('message', { sender: socket.username, text: msg });
+    io.to(socket.roomId).emit('message', {
+      sender: socket.username,
+      text: msg
+    });
   });
 
-  // Destruir sala (solo anfitrión)
+  // Destruir sala
   socket.on('destroyRoom', (rid) => {
     if (rooms[rid] && roomHostMap[rid] === socket.id) {
       io.to(rid).emit('roomDestroyed');
@@ -120,15 +134,24 @@ io.on('connection', (socket) => {
     if (roomId && rooms[roomId]) {
       const idx = rooms[roomId].indexOf(socket.id);
       if (idx > -1) rooms[roomId].splice(idx, 1);
-      io.to(roomId).emit('message', { sender: 'Sollo', text: `${socket.username} ha salido.` });
+      io.to(roomId).emit('message', {
+        sender: 'Sollo',
+        text: `${socket.username} ha salido.`
+      });
+
+      // Si era host, transferir rol
+      if (roomHostMap[roomId] === socket.id) {
+        if (rooms[roomId].length > 0) {
+          roomHostMap[roomId] = rooms[roomId][0];
+          const newHost = io.sockets.sockets.get(roomHostMap[roomId]);
+          if (newHost) newHost.emit('youAreHost');
+        } else {
+          delete roomHostMap[roomId];
+        }
+      }
+
       if (rooms[roomId].length === 0) {
         delete rooms[roomId];
-        delete roomHostMap[roomId];
-      } else if (roomHostMap[roomId] === socket.id) {
-        // Transferir host
-        roomHostMap[roomId] = rooms[roomId][0];
-        const newHost = io.sockets.sockets.get(roomHostMap[roomId]);
-        if (newHost) newHost.emit('youAreHost');
       }
     }
     delete socketUserMap[socket.id];
