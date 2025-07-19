@@ -151,6 +151,17 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    const username = localStorage.getItem('sollo_username');
+  const roomMatch = window.location.pathname.match(/\/sala\/(.+)/);
+  if (!username) {
+    // Si no hay nombre, guardar a dónde quería entrar y redirigir al inicio
+    const roomId = roomMatch ? roomMatch[1] : null;
+    if (roomId) {
+      localStorage.setItem('pending_room', roomId);
+    }
+    window.location.href = '/';
+  }
+ 
     // Extraer roomId de la ruta /sala/:roomId
     const pathParts = window.location.pathname.split('/');
     const roomId = pathParts[pathParts.length - 1];
