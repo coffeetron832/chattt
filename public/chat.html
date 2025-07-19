@@ -156,7 +156,7 @@
     background-color: #701818;
   }
 </style>
-
+<script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
   <main>
@@ -164,17 +164,26 @@
     
     <div id="room-link">
       Enlace: <span id="room-url"></span>
-      <button id="copy-button">Copiar</button>
+      <button id="copy-button">
+  <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+</button>
+
     </div>
 
     <div id="chat-box" class="chat-box"></div>
 
     <form id="message-form">
       <input type="text" id="message-input" autocomplete="off" placeholder="Escribe algo..." />
-      <button id="send-button" type="submit">Enviar</button>
+      <button id="send-button" type="submit">
+  <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+</button>
+
     </form>
 
-     <button id="destroy-room" class="destroy-room">🔥 Destruir sala</button>    
+     <button id="destroy-room" class="destroy-room">
+  <i data-lucide="flame" style="width: 16px; height: 16px;"></i>
+</button>
+    
   </main>
 
   <!-- Notificación toast -->
@@ -219,6 +228,11 @@
       alert('No se pudo copiar el enlace');
     }
   });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    lucide.createIcons();
+  });
+
 </script>
 <script src="/scripts/chat.js"></script>
 </body>
