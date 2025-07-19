@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
   if (!socket.accepted) {
     socket.emit('message', {
       sender: 'Sollo',
-      text: 'Debes esperar a ser aceptado para hablar.'
+      text: '¿Conoces la palabra Paciencia?'
     });
     return;
   }
