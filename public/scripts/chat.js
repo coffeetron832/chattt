@@ -37,15 +37,21 @@
 
   // Recibir y mostrar mensajes
   socket.on('message', ({ sender, text }) => {
-    const msg = document.createElement('div');
-    if (sender === 'Sollo') {
-      msg.innerHTML = `<em><span style=\"color:#5C677D;\">${escapeHTML(text)}</span></em>`;
-    } else {
-      msg.innerHTML = `<strong>${escapeHTML(sender)}:</strong> ${escapeHTML(text)}`;
-    }
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
+  const msg = document.createElement('div');
+  const now = new Date();
+  const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+
+  if (sender === 'Sollo') {
+    msg.innerHTML = `<em><span style="color:#5C677D;">[${time} - ${date}] ${escapeHTML(text)}</span></em>`;
+  } else {
+    msg.innerHTML = `<strong>${escapeHTML(sender)}</strong> <span style="color:gray;">[${time} - ${date}]</span>: ${escapeHTML(text)}`;
+  }
+
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+
 
   // Sala llena
   socket.on('roomFull', () => {
