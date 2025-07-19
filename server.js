@@ -9,25 +9,24 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 8080;
+const rooms = {};           // { roomId: [socketId, ...] }
+const socketUserMap = {};   // socket.id -> username
 
-const rooms = {}; // { roomId: [socketId, ...] }
-const socketUserMap = {}; // socket.id -> username
-
-// Servir archivos estáticos
+// Servir archivos estáticos desde /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta raíz: crea y redirige a una sala aleatoria
-app.get('/', (req, res) => {
-  const newRoomId = nanoid(8); // por ejemplo: Yk3xA7bq
+// Ruta para generar una nueva sala y redirigir
+app.get('/crear', (req, res) => {
+  const newRoomId = nanoid(8);
   res.redirect(`/sala/${newRoomId}`);
 });
 
-// Ruta dinámica de sala
+// Ruta dinámica para acceder a cualquier sala
 app.get('/sala/:roomId', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'chat.html'));
 });
 
-// SOCKETS
+// WebSocket
 io.on('connection', (socket) => {
   socket.on('joinRoom', ({ roomId, username }) => {
     const socketsInRoom = rooms[roomId] || [];
@@ -37,15 +36,18 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Guardar información en el socket
     socket.username = username;
     socket.roomId = roomId;
     socketUserMap[socket.id] = username;
 
     if (socketsInRoom.length === 0) {
+      // Primer usuario: anfitrión
       rooms[roomId] = [socket.id];
       socket.join(roomId);
       io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha unido.` });
     } else {
+      // Solicitud de ingreso a anfitrión
       const hostSocketId = socketsInRoom[0];
       io.to(hostSocketId).emit('joinRequest', {
         requesterId: socket.id,
@@ -53,6 +55,7 @@ io.on('connection', (socket) => {
       });
     }
 
+    // Manejar respuesta del anfitrión
     socket.on('joinResponse', ({ requesterId, accepted }) => {
       const targetSocket = io.sockets.sockets.get(requesterId);
       if (!targetSocket) return;
@@ -70,23 +73,19 @@ io.on('connection', (socket) => {
       }
     });
 
+    // Mensajes de chat
     socket.on('chatMessage', (msg) => {
-      io.to(roomId).emit('message', {
-        sender: socket.username,
-        text: msg
-      });
+      io.to(roomId).emit('message', { sender: socket.username, text: msg });
     });
 
+    // Desconexión
     socket.on('disconnect', () => {
       const room = socket.roomId;
       if (room && rooms[room]) {
-        const index = rooms[room].indexOf(socket.id);
-        if (index > -1) {
-          rooms[room].splice(index, 1);
-          io.to(room).emit('message', {
-            sender: 'Sollo',
-            text: `${socket.username} ha salido.`
-          });
+        const idx = rooms[room].indexOf(socket.id);
+        if (idx > -1) {
+          rooms[room].splice(idx, 1);
+          io.to(room).emit('message', { sender: 'Sollo', text: `${socket.username} ha salido.` });
           if (rooms[room].length === 0) delete rooms[room];
         }
       }
