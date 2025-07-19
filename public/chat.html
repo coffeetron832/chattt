@@ -40,23 +40,28 @@ h2 {
 
 #message-input {
   flex: 1;
-  padding: 0.75rem;
-  border-radius: 8px;
+  padding: 0.6rem;
+  border-radius: 6px;
   border: 1px solid #333;
   background: #1c1c1c;
   color: #e0e0e0;
+  font-size: 0.95rem;
 }
 
 #send-button {
-  padding: 0.75rem 1rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
   border: none;
   background-color: #388e3c;
   color: white;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease;
+  flex-shrink: 0;
+  align-self: center;
 }
+
 
 #send-button:hover {
   background-color: #2e7d32;
@@ -128,6 +133,26 @@ h2 {
   from { opacity: 0; transform: translate(-50%, 10px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+
+    .destroy-room {
+  margin-top: 1rem;
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: none;
+  transition: background 0.2s ease;
+}
+
+.destroy-room:hover {
+  background-color: #b71c1c;
+}
+
   </style>
 </head>
 <body>
@@ -146,21 +171,7 @@ h2 {
       <button id="send-button" type="submit">Enviar</button>
     </form>
 
-     <button id="destroy-room" style="
-  margin-top: 1rem;
-  background-color: #ff5252;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  display: none;
-">
-  🔥 Destruir sala
-</button>
-
-    
+     <button id="destroy-room" class="destroy-room">🔥 Destruir sala</button>    
   </main>
 
   <!-- Notificación toast -->
