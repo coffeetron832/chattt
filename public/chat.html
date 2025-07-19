@@ -199,6 +199,8 @@
   <script src="/socket.io/socket.io.js"></script>
 <script>
   const username = localStorage.getItem('sollo_username');
+  const wasAccepted = localStorage.getItem('sollo_accepted') === 'true';
+const wasHost = localStorage.getItem('sollo_host') === 'true';
   const roomMatch = window.location.pathname.match(/\/sala\/(.+)/);
   const roomId = roomMatch ? roomMatch[1] : null;
 
@@ -208,6 +210,10 @@
     }
     window.location.href = '/';
   }
+
+  window.solloAccepted = wasAccepted;
+window.solloIsHost = wasHost;
+
 
   // Exponer las variables globalmente para que chat.js las use
   window.solloUsername = username;
