@@ -13,37 +13,28 @@ body {
 }
 
 .centered {
-  max-width: 480px;
-  margin: auto;
-  text-align: center;
+  max-width: 900px;
+  margin: 3rem auto;
+  text-align: left;
+}
+
+.split-layout {
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  align-items: center; /* centra verticalmente */
 }
 
 h1 {
   font-weight: 700;
   font-size: 2.8rem;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.8rem;
   color: #2C3E50; /* azul corporativo para destacar */
 }
 
-.tagline {
-  font-weight: 400;
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  color: #bbb;
-  font-style: italic;
-}
-
 .intro {
-  text-align: left;
-  margin-bottom: 2.5rem;
+  flex: 1 1 55%;
   color: #ccc;
-}
-
-.intro h2 {
-  color: #2C3E50;
-  font-weight: 700;
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
 }
 
 .intro p {
@@ -67,6 +58,21 @@ h1 {
   font-weight: 700;
   font-size: 1.1rem;
   color: #2C3E50;
+}
+
+.form-section {
+  flex: 1 1 40%;
+  background-color: #222;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.6);
+}
+
+.form-section form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 input, button {
@@ -106,5 +112,5 @@ button {
 }
 
 button:hover {
-  background-color: #1f2b3a; /* un azul más oscuro para hover */
+  background-color: #1f2b3a;
 }
