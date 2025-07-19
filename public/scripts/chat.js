@@ -4,15 +4,21 @@ const chatBox = document.getElementById('chat-box');
 const form = document.getElementById('message-form');
 const input = document.getElementById('message-input');
 
-const urlParams = new URLSearchParams(window.location.search);
-const roomId = urlParams.get('room');
+// Obtener roomId desde la ruta: /sala/:roomId
+const pathParts = window.location.pathname.split('/');
+const roomId = pathParts[pathParts.length - 1];
+
+// Nombre guardado en localStorage al generar sala
 const username = localStorage.getItem('sollo_username') || 'Anónimo';
 
+// Mostrar roomId en la UI
 document.getElementById('room-id').textContent = roomId;
 
-// Escapar HTML (pequeña protección XSS)
+deviceCheck(); // opcional: verifica compatibilidad share API
+
+// Proteger contra XSS
 function escapeHTML(str) {
-  return str.replace(/[&<>"']/g, match => ({
+  return str.replace(/[&<>\"']/g, match => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -21,8 +27,11 @@ function escapeHTML(str) {
   })[match]);
 }
 
+// Unirse a la sala
 socket.emit('joinRoom', { roomId, username });
 
+// Enviar mensaje
+document.getElementById('send-button').disabled = false;
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   const message = input.value.trim();
@@ -33,11 +42,12 @@ form.addEventListener('submit', (e) => {
   }
 });
 
+// Recibir mensajes
 socket.on('message', ({ sender, text }) => {
   const msg = document.createElement('div');
 
   if (sender === 'Sollo') {
-    msg.innerHTML = `<em><span style="color:#ff77d0;">${escapeHTML(text)}</span></em>`;
+    msg.innerHTML = `<em><span style=\"color:#ff77d0;\">${escapeHTML(text)}</span></em>`;
   } else {
     msg.innerHTML = `<strong>${escapeHTML(sender)}:</strong> ${escapeHTML(text)}`;
   }
@@ -46,7 +56,31 @@ socket.on('message', ({ sender, text }) => {
   chatBox.scrollTop = chatBox.scrollHeight;
 });
 
+// Sala llena
 socket.on('roomFull', () => {
   alert('Esta sala ya alcanzó el límite de 10 personas.');
+  window.location.href = '/';
+});
+
+// Manejar solicitud de ingreso: joinRequest
+socket.on('joinRequest', ({ requesterId, requesterName }) => {
+  // Mostrar toast (ya manejado en HTML)
+  document.getElementById('toast-username').textContent = requesterName;
+  const toast = document.getElementById('toast');
+  toast.style.display = 'flex';
+
+  document.getElementById('accept-btn').onclick = () => {
+    socket.emit('joinResponse', { requesterId, accepted: true });
+    toast.style.display = 'none';
+  };
+  document.getElementById('reject-btn').onclick = () => {
+    socket.emit('joinResponse', { requesterId, accepted: false });
+    toast.style.display = 'none';
+  };
+});
+
+// Usuario rechazado
+socket.on('joinRejected', () => {
+  alert('El anfitrión no te permitió unirte a la sala.');
   window.location.href = '/';
 });
