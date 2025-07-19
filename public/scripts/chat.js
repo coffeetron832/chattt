@@ -1,131 +1,100 @@
 // public/scripts/chat.js
-const socket = io();
-const chatBox = document.getElementById('chat-box');
-const form = document.getElementById('message-form');
-const input = document.getElementById('message-input');
+(function() {
+  const socket = io();
+  const chatBox = document.getElementById('chat-box');
+  const form = document.getElementById('message-form');
+  const input = document.getElementById('message-input');
+  
+  // Variables globales definidas en chat.html
+  const roomId = window.solloRoomId;
+  const username = window.solloUsername;
 
-// Obtener roomId desde la ruta: /sala/:roomId
-const pathParts = window.location.pathname.split('/');
-const roomId = pathParts[pathParts.length - 1];
+  // Protección XSS
+  function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, match => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    })[match]);
+  }
 
-// Nombre guardado en localStorage al generar sala
-const username = localStorage.getItem('sollo_username') || 'Anónimo';
+  // Unirse a la sala
+  socket.emit('joinRoom', { roomId, username });
 
-if (!username) {
-  // Si no hay nombre, redirigir al inicio
-  alert('Debes ingresar tu nombre antes de entrar a una sala.');
-  window.location.href = '/';
-}
-
-
-window.addEventListener('beforeunload', () => {
-  localStorage.removeItem('sollo_username');
-});
-
-
-// Mostrar roomId en la UI
-document.getElementById('room-id').textContent = roomId;
-
-deviceCheck(); // opcional: verifica compatibilidad share API
-
-// Proteger contra XSS
-function escapeHTML(str) {
-  return str.replace(/[&<>\"']/g, match => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  })[match]);
-}
-
-// Unirse a la sala
-socket.on('joinRoom', ({ roomId, username }) => {
-  socket.join(roomId);
-  socket.username = username; // guardar para futuras referencias
-
-  // Notificar a todos excepto al que entra
-  socket.to(roomId).emit('message', {
-    sender: 'Sollo',
-    text: `${username} se ha unido a la sala.`
+  // Habilitar envío
+  document.getElementById('send-button').disabled = false;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = input.value.trim();
+    if (message) {
+      socket.emit('chatMessage', message);
+      input.value = '';
+      input.focus();
+    }
   });
-});
 
+  // Recibir y mostrar mensajes
+  socket.on('message', ({ sender, text }) => {
+    const msg = document.createElement('div');
+    if (sender === 'Sollo') {
+      msg.innerHTML = `<em><span style=\"color:#ff77d0;\">${escapeHTML(text)}</span></em>`;
+    } else {
+      msg.innerHTML = `<strong>${escapeHTML(sender)}:</strong> ${escapeHTML(text)}`;
+    }
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
 
-// Enviar mensaje
-document.getElementById('send-button').disabled = false;
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const message = input.value.trim();
-  if (message) {
-    socket.emit('chatMessage', message);
-    input.value = '';
-    input.focus();
-  }
-});
+  // Sala llena
+  socket.on('roomFull', () => {
+    alert('Esta sala ya alcanzó el límite de 10 personas.');
+    window.location.href = '/';
+  });
 
-// Recibir mensajes
-socket.on('message', ({ sender, text }) => {
-  const msg = document.createElement('div');
+  // Solicitud de ingreso
+  socket.on('joinRequest', ({ requesterId, requesterName }) => {
+    document.getElementById('toast-username').textContent = requesterName;
+    const toast = document.getElementById('toast');
+    toast.style.display = 'flex';
+    document.getElementById('accept-btn').onclick = () => {
+      socket.emit('joinResponse', { requesterId, accepted: true });
+      toast.style.display = 'none';
+    };
+    document.getElementById('reject-btn').onclick = () => {
+      socket.emit('joinResponse', { requesterId, accepted: false });
+      toast.style.display = 'none';
+    };
+  });
 
-  if (sender === 'Sollo') {
-    msg.innerHTML = `<em><span style=\"color:#ff77d0;\">${escapeHTML(text)}</span></em>`;
-  } else {
-    msg.innerHTML = `<strong>${escapeHTML(sender)}:</strong> ${escapeHTML(text)}`;
-  }
+  // Rechazo de unión
+  socket.on('joinRejected', () => {
+    alert('El anfitrión no te permitió unirte a la sala.');
+    window.location.href = '/';
+  });
 
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
+  // Destruir sala
+  let isHost = false;
+  socket.on('youAreHost', () => {
+    isHost = true;
+    document.getElementById('destroy-room').style.display = 'inline-block';
+  });
 
-// Sala llena
-socket.on('roomFull', () => {
-  alert('Esta sala ya alcanzó el límite de 10 personas.');
-  window.location.href = '/';
-});
+  document.getElementById('destroy-room').addEventListener('click', () => {
+    if (!isHost) return;
+    if (confirm('¿Estás seguro de que deseas destruir esta sala? Todos serán expulsados.')) {
+      socket.emit('destroyRoom', roomId);
+    }
+  });
 
-// Manejar solicitud de ingreso: joinRequest
-socket.on('joinRequest', ({ requesterId, requesterName }) => {
-  // Mostrar toast (ya manejado en HTML)
-  document.getElementById('toast-username').textContent = requesterName;
-  const toast = document.getElementById('toast');
-  toast.style.display = 'flex';
+  socket.on('roomDestroyed', () => {
+    alert('La sala fue destruida por el anfitrión.');
+    window.location.href = '/';
+  });
 
-  document.getElementById('accept-btn').onclick = () => {
-    socket.emit('joinResponse', { requesterId, accepted: true });
-    toast.style.display = 'none';
-  };
-  document.getElementById('reject-btn').onclick = () => {
-    socket.emit('joinResponse', { requesterId, accepted: false });
-    toast.style.display = 'none';
-  };
-});
-
-// Usuario rechazado
-socket.on('joinRejected', () => {
-  alert('El anfitrión no te permitió unirte a la sala.');
-  window.location.href = '/';
-});
-
-
-// Mostrar botón solo si eres el anfitrión
-let isHost = false;
-socket.on('youAreHost', () => {
-  isHost = true;
-  document.getElementById('destroy-room').style.display = 'inline-block';
-});
-
-// Gestionar clic en "Destruir sala"
-document.getElementById('destroy-room').addEventListener('click', () => {
-  if (!isHost) return;
-  if (confirm('¿Estás seguro de que deseas destruir esta sala? Todos serán expulsados.')) {
-    socket.emit('destroyRoom', roomId);
-  }
-});
-
-// Cuando la sala es destruida
-socket.on('roomDestroyed', () => {
-  alert('La sala fue destruida por el anfitrión.');
-  window.location.href = '/';
-});
-
+  // Limpiar nombre al salir
+  window.addEventListener('beforeunload', () => {
+    localStorage.removeItem('sollo_username');
+  });
+})();
