@@ -43,26 +43,26 @@ io.on('connection', (socket) => {
     socketUserMap[socket.id] = username;
 
     // Si la sala ya existe, permitir que se una directamente
-    if (rooms[roomId]) {
-      rooms[roomId].push(socket.id);
-      socket.join(roomId);
-      io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha unido.` });
+    if (!rooms[roomId]) {
+  // Sala nueva: primer usuario (anfitrión)
+  rooms[roomId] = [socket.id];
+  socket.join(roomId);
+  socket.emit('youAreHost');
+  io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} ha creado la sala.` });
 
-    } else if (socketsInRoom.length === 0) {
-      // Primer usuario: anfitrión
-      rooms[roomId] = [socket.id];
-      socket.join(roomId);
-      socket.emit('youAreHost'); // Indicar al anfitrión
-      io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} ha creado la sala.` });
+} else {
+  const socketsInRoom = rooms[roomId];
+  const hostSocketId = socketsInRoom[0];
 
-    } else {
-      // Solicitud de ingreso a anfitrión
-      const hostSocketId = socketsInRoom[0];
-      io.to(hostSocketId).emit('joinRequest', {
-        requesterId: socket.id,
-        requesterName: username
-      });
-    }
+  // Guardar solicitud pendiente
+  socket.emit('waitingApproval'); // opcional para mostrar spinner
+
+  io.to(hostSocketId).emit('joinRequest', {
+    requesterId: socket.id,
+    requesterName: username
+  });
+}
+
 
     // Manejar respuesta del anfitrión
     socket.on('joinResponse', ({ requesterId, accepted }) => {
