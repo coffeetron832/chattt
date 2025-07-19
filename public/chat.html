@@ -178,14 +178,15 @@
     window.location.href = '/';
   }
 
-  // Mostrar el ID de la sala en la interfaz
-  document.getElementById('room-id').textContent = roomId;
+  // Exponer las variables globalmente para que chat.js las use
+  window.solloUsername = username;
+  window.solloRoomId = roomId;
 
-  // Generar y mostrar la URL de la sala
+  // Mostrar la info en la interfaz
+  document.getElementById('room-id').textContent = roomId;
   const roomURL = `${window.location.origin}/sala/${roomId}`;
   document.getElementById('room-url').textContent = roomURL;
 
-  // Funcionalidad del botón "Copiar"
   document.getElementById('copy-button').addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(roomURL);
@@ -201,3 +202,4 @@
 <script src="/scripts/chat.js"></script>
 </body>
 </html>
+
