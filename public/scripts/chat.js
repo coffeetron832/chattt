@@ -45,12 +45,13 @@
   if (sender === 'Sollo') {
     msg.innerHTML = `<em><span style="color:#5C677D;">[${time} - ${date}] ${escapeHTML(text)}</span></em>`;
   } else {
-    msg.innerHTML = `<strong>${escapeHTML(sender)}</strong> <span style="color:gray;">[${time} - ${date}]</span>: ${escapeHTML(text)}`;
+    msg.innerHTML = `<span style="color:gray;">[${time} - ${date}]</span> <strong>${escapeHTML(sender)}</strong>: ${escapeHTML(text)}`;
   }
 
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
 });
+
 
 
 
