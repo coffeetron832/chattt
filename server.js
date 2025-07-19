@@ -74,20 +74,25 @@ io.on('connection', (socket) => {
 
   // Manejar respuesta del anfitrión
   socket.on('joinResponse', ({ requesterId, accepted }) => {
-    const targetSocket = io.sockets.sockets.get(requesterId);
-    if (!targetSocket) return;
+  const targetSocket = io.sockets.sockets.get(requesterId);
+  if (!targetSocket) return;
 
-    const roomId = socket.roomId;
-    if (accepted) {
-      rooms[roomId].push(requesterId);
-      targetSocket.join(roomId);
-      targetSocket.accepted = true;
-      io.to(roomId).emit('message', { sender: 'Sollo', text: `${socketUserMap[requesterId]} se ha unido.` });
-    } else {
-      targetSocket.emit('joinRejected');
-      targetSocket.disconnect();
-    }
-  });
+  const roomId = socket.roomId;
+  if (accepted) {
+    rooms[roomId].push(requesterId);
+    targetSocket.join(roomId);
+    targetSocket.accepted = true;
+
+    // 🔑 Esta línea permite que el usuario pueda escribir
+    targetSocket.emit('joinAccepted');
+
+    io.to(roomId).emit('message', { sender: 'Sollo', text: `${socketUserMap[requesterId]} se ha unido.` });
+  } else {
+    targetSocket.emit('joinRejected');
+    targetSocket.disconnect();
+  }
+});
+
 
   // Mensajes de chat
   socket.on('chatMessage', (msg) => {
