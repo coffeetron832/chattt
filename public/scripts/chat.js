@@ -39,7 +39,7 @@
   socket.on('message', ({ sender, text }) => {
     const msg = document.createElement('div');
     if (sender === 'Sollo') {
-      msg.innerHTML = `<em><span style=\"color:#ff77d0;\">${escapeHTML(text)}</span></em>`;
+      msg.innerHTML = `<em><span style=\"color:#5C677D;\">${escapeHTML(text)}</span></em>`;
     } else {
       msg.innerHTML = `<strong>${escapeHTML(sender)}:</strong> ${escapeHTML(text)}`;
     }
