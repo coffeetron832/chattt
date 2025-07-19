@@ -40,7 +40,17 @@ function escapeHTML(str) {
 }
 
 // Unirse a la sala
-socket.emit('joinRoom', { roomId, username });
+socket.on('joinRoom', ({ roomId, username }) => {
+  socket.join(roomId);
+  socket.username = username; // guardar para futuras referencias
+
+  // Notificar a todos excepto al que entra
+  socket.to(roomId).emit('message', {
+    sender: 'Sollo',
+    text: `${username} se ha unido a la sala.`
+  });
+});
+
 
 // Enviar mensaje
 document.getElementById('send-button').disabled = false;
