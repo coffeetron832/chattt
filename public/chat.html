@@ -42,27 +42,30 @@ h2 {
 
 #message-input {
   flex-grow: 1;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
   border: 1px solid #333;
   background: #1c1c1c;
   color: #e0e0e0;
   font-size: 1rem;
-  min-width: 0; /* importante para que no desborde */
+  min-width: 0;
+  max-width: 100%;
 }
 
 #send-button {
-  padding: 0.5rem 0.9rem;
-  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
   border: none;
   background-color: #388e3c;
   color: white;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.2s ease;
+  min-width: 70px;
 }
+
 
 
 
@@ -143,15 +146,15 @@ h2 {
   background-color: #c62828;
   color: white;
   border: none;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
   display: none;
   transition: background 0.2s ease;
+  min-width: 100px;
 }
-
 .destroy-room:hover {
   background-color: #b71c1c;
 }
