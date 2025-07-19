@@ -166,37 +166,38 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const username = localStorage.getItem('sollo_username');
+<script>
+  const username = localStorage.getItem('sollo_username');
   const roomMatch = window.location.pathname.match(/\/sala\/(.+)/);
+  const roomId = roomMatch ? roomMatch[1] : null;
+
   if (!username) {
-    // Si no hay nombre, guardar a dónde quería entrar y redirigir al inicio
-    const roomId = roomMatch ? roomMatch[1] : null;
     if (roomId) {
       localStorage.setItem('pending_room', roomId);
     }
     window.location.href = '/';
   }
- 
-    // Extraer roomId de la ruta /sala/:roomId
-    document.getElementById('room-id').textContent = roomId;
 
-    // Generar URL correcta
-    const roomURL = `${window.location.origin}/sala/${roomId}`;
-    document.getElementById('room-url').textContent = roomURL;
+  // Mostrar el ID de la sala en la interfaz
+  document.getElementById('room-id').textContent = roomId;
 
-    document.getElementById('copy-button').addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(roomURL);
-        const btn = document.getElementById('copy-button');
-        const prev = btn.textContent;
-        btn.textContent = 'Copiado ✅';
-        setTimeout(() => btn.textContent = prev, 2000);
-      } catch (err) {
-        alert('No se pudo copiar el enlace');
-      }
-    });
-  </script>
-  <script src="/scripts/chat.js"></script>
+  // Generar y mostrar la URL de la sala
+  const roomURL = `${window.location.origin}/sala/${roomId}`;
+  document.getElementById('room-url').textContent = roomURL;
+
+  // Funcionalidad del botón "Copiar"
+  document.getElementById('copy-button').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(roomURL);
+      const btn = document.getElementById('copy-button');
+      const prev = btn.textContent;
+      btn.textContent = 'Copiado ✅';
+      setTimeout(() => btn.textContent = prev, 2000);
+    } catch (err) {
+      alert('No se pudo copiar el enlace');
+    }
+  });
+</script>
+<script src="/scripts/chat.js"></script>
 </body>
 </html>
