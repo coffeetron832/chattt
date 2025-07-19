@@ -108,22 +108,24 @@ socket.on('joinRejected', () => {
 });
 
 
-// Mostrar botón solo si es el anfitrión (primer usuario en entrar)
+// Mostrar botón solo si eres el anfitrión
 let isHost = false;
-
 socket.on('youAreHost', () => {
   isHost = true;
   document.getElementById('destroy-room').style.display = 'inline-block';
 });
 
+// Gestionar clic en "Destruir sala"
 document.getElementById('destroy-room').addEventListener('click', () => {
+  if (!isHost) return;
   if (confirm('¿Estás seguro de que deseas destruir esta sala? Todos serán expulsados.')) {
     socket.emit('destroyRoom', roomId);
   }
 });
 
-// Cuando el servidor destruye la sala
+// Cuando la sala es destruida
 socket.on('roomDestroyed', () => {
   alert('La sala fue destruida por el anfitrión.');
   window.location.href = '/';
 });
+
