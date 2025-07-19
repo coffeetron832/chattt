@@ -40,17 +40,20 @@
   const msg = document.createElement('div');
   const now = new Date();
   const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-  const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+  const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' });
+
+  const timestamp = `${date} ${time}`; // Ej: "19/07 16:40"
 
   if (sender === 'Sollo') {
-    msg.innerHTML = `<em><span style="color:#5C677D;">[${time} - ${date}] ${escapeHTML(text)}</span></em>`;
+    msg.innerHTML = `<em><span style="color:#5C677D;">[${timestamp}] ${escapeHTML(text)}</span></em>`;
   } else {
-    msg.innerHTML = `<strong>${escapeHTML(sender)}</strong> <span style="color:gray;">[${time} - ${date}]</span>: ${escapeHTML(text)}`;
+    msg.innerHTML = `<strong>${escapeHTML(sender)}</strong> <span style="color:gray;">[${timestamp}]</span>: ${escapeHTML(text)}`;
   }
 
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
 });
+
 
 
   // Sala llena
