@@ -22,7 +22,7 @@ h1 {
   font-weight: 700;
   font-size: 2.8rem;
   margin-bottom: 0.2rem;
-  color: #ff77d0; /* rosa vibrante para destacar */
+  color: #2C3E50; /* azul corporativo para destacar */
 }
 
 .tagline {
@@ -40,7 +40,7 @@ h1 {
 }
 
 .intro h2 {
-  color: #ff77d0;
+  color: #2C3E50;
   font-weight: 700;
   font-size: 1.8rem;
   margin-bottom: 1rem;
@@ -66,7 +66,7 @@ h1 {
 .intro .cta {
   font-weight: 700;
   font-size: 1.1rem;
-  color: #ff77d0;
+  color: #2C3E50;
 }
 
 input, button {
@@ -93,18 +93,18 @@ input::placeholder {
 }
 
 input:focus {
-  border-color: #ff77d0;
+  border-color: #2C3E50;
   background-color: #2a2a2a;
   color: #fff;
 }
 
 button {
-  background-color: #ff77d0;
+  background-color: #2C3E50;
   color: #121212;
   font-weight: 700;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #e051b8;
+  background-color: #1f2b3a; /* un azul más oscuro para hover */
 }
