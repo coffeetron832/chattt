@@ -47,6 +47,7 @@ io.on('connection', (socket) => {
   // Sala nueva: primer usuario (anfitrión)
   rooms[roomId] = [socket.id];
   socket.join(roomId);
+  socket.accepted = true; // ✅ El anfitrión está aceptado de inmediato
   socket.emit('youAreHost');
   io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} ha creado la sala.` });
 
@@ -66,29 +67,42 @@ io.on('connection', (socket) => {
 
     // Manejar respuesta del anfitrión
     socket.on('joinResponse', ({ requesterId, accepted }) => {
-      const targetSocket = io.sockets.sockets.get(requesterId);
-      if (!targetSocket) return;
+  const targetSocket = io.sockets.sockets.get(requesterId);
+  if (!targetSocket) return;
 
-      if (accepted) {
-        rooms[roomId].push(requesterId);
-        targetSocket.join(roomId);
-        io.to(roomId).emit('message', {
-          sender: 'Sollo',
-          text: `${socketUserMap[requesterId]} se ha unido.`
-        });
-      } else {
-        targetSocket.emit('joinRejected');
-        targetSocket.disconnect();
-      }
+  if (accepted) {
+    rooms[roomId].push(requesterId);
+    targetSocket.join(roomId);
+    targetSocket.accepted = true; // ✅ Bandera de aceptación
+
+    io.to(roomId).emit('message', {
+      sender: 'Sollo',
+      text: `${socketUserMap[requesterId]} se ha unido.`
     });
+  } else {
+    targetSocket.emit('joinRejected');
+    targetSocket.disconnect();
+  }
+});
+
 
     // Mensajes de chat
     socket.on('chatMessage', (msg) => {
-      io.to(roomId).emit('message', {
-        sender: socket.username,
-        text: msg
-      });
+  // Bloquear si no ha sido aceptado
+  if (!socket.accepted) {
+    socket.emit('message', {
+      sender: 'Sollo',
+      text: 'Debes esperar a ser aceptado para hablar.'
     });
+    return;
+  }
+
+  io.to(roomId).emit('message', {
+    sender: socket.username,
+    text: msg
+  });
+});
+
 
     // Destruir sala (solo anfitrión)
     socket.on('destroyRoom', (rid) => {
