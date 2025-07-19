@@ -1,5 +1,5 @@
 // public/scripts/chat.js
-(function() {
+(function () {
   const socket = io();
   const chatBox = document.getElementById('chat-box');
   const form = document.getElementById('message-form');
@@ -9,13 +9,21 @@
   // Obtener valores guardados
   const roomId = window.solloRoomId;
   let username = localStorage.getItem('sollo_username');
-  const wasAccepted = localStorage.getItem('sollo_accepted') === 'true';
   let isHost = localStorage.getItem('sollo_is_host') === 'true';
+  let wasAccepted = localStorage.getItem('sollo_accepted') === 'true';
 
   // Si no hay username guardado, tomar del HTML y guardar
   if (!username) {
     username = window.solloUsername;
     localStorage.setItem('sollo_username', username);
+  }
+
+  // Detectar si esta URL es de creación (ajústalo según tu lógica o ruta real)
+  if (window.location.pathname.includes('/crear')) {
+    isHost = true;
+    wasAccepted = true;
+    localStorage.setItem('sollo_is_host', 'true');
+    localStorage.setItem('sollo_accepted', 'true');
   }
 
   // Permiso de chat
@@ -32,12 +40,13 @@
     })[match]);
   }
 
-  // Conectar o reconectar
-  if (wasAccepted || isHost) {
-    socket.emit('reconnectToRoom', { roomId, username, isHost });
-  } else {
-    socket.emit('joinRoom', { roomId, username });
-  }
+  // Enviar información al servidor
+  socket.emit('joinRoom', {
+    roomId,
+    username,
+    wasAccepted,
+    wasHost: isHost
+  });
 
   // Configurar estado inicial del chat
   sendBtn.disabled = !canChat;
@@ -83,16 +92,19 @@
     toast.style.display = 'flex';
     document.getElementById('accept-btn').onclick = () => {
       socket.emit('joinResponse', { requesterId, accepted: true });
-      localStorage.setItem('sollo_accepted', 'true');
-      canChat = true;
-      sendBtn.disabled = false;
-      input.disabled = false;
       toast.style.display = 'none';
     };
     document.getElementById('reject-btn').onclick = () => {
       socket.emit('joinResponse', { requesterId, accepted: false });
       toast.style.display = 'none';
     };
+  });
+
+  socket.on('joinAccepted', () => {
+    localStorage.setItem('sollo_accepted', 'true');
+    canChat = true;
+    sendBtn.disabled = false;
+    input.disabled = false;
   });
 
   socket.on('joinRejected', () => {
@@ -127,5 +139,4 @@
     window.location.href = '/';
   });
 
-  // No limpiar localStorage en recarga para conservar sesión
 })();
