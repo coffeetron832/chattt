@@ -1,19 +1,33 @@
-// server.js
 const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
 const path = require('path');
+const { nanoid } = require('nanoid');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 8080;
+
 const rooms = {}; // { roomId: [socketId, ...] }
 const socketUserMap = {}; // socket.id -> username
 
+// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Ruta raíz: crea y redirige a una sala aleatoria
+app.get('/', (req, res) => {
+  const newRoomId = nanoid(8); // por ejemplo: Yk3xA7bq
+  res.redirect(`/sala/${newRoomId}`);
+});
+
+// Ruta dinámica de sala
+app.get('/sala/:roomId', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'chat.html'));
+});
+
+// SOCKETS
 io.on('connection', (socket) => {
   socket.on('joinRoom', ({ roomId, username }) => {
     const socketsInRoom = rooms[roomId] || [];
@@ -23,26 +37,22 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Guardar temporalmente el username
     socket.username = username;
     socket.roomId = roomId;
     socketUserMap[socket.id] = username;
 
     if (socketsInRoom.length === 0) {
-      // Si la sala está vacía, se une directamente (es el anfitrión)
       rooms[roomId] = [socket.id];
       socket.join(roomId);
       io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha unido.` });
     } else {
-      // Enviar solicitud al anfitrión para que acepte/rechace
-      const hostSocketId = socketsInRoom[0]; // el primero es el anfitrión
+      const hostSocketId = socketsInRoom[0];
       io.to(hostSocketId).emit('joinRequest', {
         requesterId: socket.id,
         requesterName: username
       });
     }
 
-    // Respuesta del anfitrión
     socket.on('joinResponse', ({ requesterId, accepted }) => {
       const targetSocket = io.sockets.sockets.get(requesterId);
       if (!targetSocket) return;
