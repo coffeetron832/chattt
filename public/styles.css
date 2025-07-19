@@ -114,3 +114,27 @@ button {
 button:hover {
   background-color: #1f2b3a;
 }
+
+/* Responsive para móviles */
+@media (max-width: 700px) {
+  .split-layout {
+    flex-direction: column;
+    max-width: 100%;
+    margin: 1rem;
+    text-align: center;
+  }
+
+  .intro, .form-section {
+    flex: none;
+    width: 100%;
+    margin: 0 auto 2rem auto;
+  }
+
+  .form-section {
+    padding: 1.5rem;
+  }
+
+  input, button {
+    font-size: 1rem;
+  }
+}
