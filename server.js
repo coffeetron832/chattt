@@ -45,6 +45,7 @@ io.on('connection', (socket) => {
       // Primer usuario: anfitrión
       rooms[roomId] = [socket.id];
       socket.join(roomId);
+      socket.emit('youAreHost');            // Indicar al anfitrión
       io.to(roomId).emit('message', { sender: 'Sollo', text: `${username} se ha unido.` });
     } else {
       // Solicitud de ingreso a anfitrión
@@ -76,6 +77,19 @@ io.on('connection', (socket) => {
     // Mensajes de chat
     socket.on('chatMessage', (msg) => {
       io.to(roomId).emit('message', { sender: socket.username, text: msg });
+    });
+
+    // Destruir sala (solo anfitrión)
+    socket.on('destroyRoom', (rid) => {
+      if (rooms[rid] && rooms[rid][0] === socket.id) {
+        io.to(rid).emit('roomDestroyed');
+        io.in(rid).socketsLeave(rid);
+        delete rooms[rid];
+        // limpiar usuarios
+        Object.keys(socketUserMap).forEach(id => {
+          if (socketsInRoom.includes(id)) delete socketUserMap[id];
+        });
+      }
     });
 
     // Desconexión
