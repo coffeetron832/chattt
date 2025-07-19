@@ -6,5 +6,5 @@ document.getElementById('start-form').addEventListener('submit', function (e) {
 
   const roomId = crypto.randomUUID().slice(0, 6); // Sala corta y única
   localStorage.setItem('sollo_username', username);
-  window.location.href = `/chat.html?room=${roomId}`;
+  window.location.href = `/sala/${roomId}`;
 });
