@@ -11,6 +11,18 @@ const roomId = pathParts[pathParts.length - 1];
 // Nombre guardado en localStorage al generar sala
 const username = localStorage.getItem('sollo_username') || 'Anónimo';
 
+if (!username) {
+  // Si no hay nombre, redirigir al inicio
+  alert('Debes ingresar tu nombre antes de entrar a una sala.');
+  window.location.href = '/';
+}
+
+
+window.addEventListener('beforeunload', () => {
+  localStorage.removeItem('sollo_username');
+});
+
+
 // Mostrar roomId en la UI
 document.getElementById('room-id').textContent = roomId;
 
