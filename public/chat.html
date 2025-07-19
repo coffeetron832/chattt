@@ -5,79 +5,75 @@
   <title>Sollo - Sala</title>
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    body {
+   body {
   margin: 2rem;
-  font-family: 'Segoe UI', 'Inter', sans-serif;
-  background-color: #0b0b0b;
-  color: #e0e0e0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background-color: #0e0e0e;
+  color: #e5e5e5;
 }
 
 main {
-  max-width: 600px;
+  max-width: 640px;
   margin: 0 auto;
 }
 
 h2 {
-  margin-bottom: 0.5rem;
-  color: #81c784; /* Verde sobrio */
+  margin-bottom: 0.75rem;
+  color: #66bb6a; /* Verde sobrio más elegante */
   font-weight: 600;
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
 }
 
 #chat-box {
   border: 1px solid #2c2c2c;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 1rem;
-  height: 400px;
+  height: 420px;
   overflow-y: auto;
-  background: #121212;
+  background: #141414;
   margin-bottom: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 #message-form {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-top: 1rem;
 }
 
 #message-input {
   flex-grow: 1;
-  padding: 0.75rem 1.2rem;
+  padding: 0.9rem 1.2rem;
   border-radius: 10px;
-  border: 1px solid #333;
-  background: #1c1c1c;
-  color: #e0e0e0;
+  border: 1px solid #444;
+  background: #1b1b1b;
+  color: #f0f0f0;
   font-size: 1rem;
-  min-width: 0;
-  max-width: 100%;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
 }
 
 #send-button {
-  padding: 0.3rem 0.5rem;
-  font-size: 0.7rem;
-  border: none;
-  background-color: #388e3c;
-  color: white;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  border-radius: 5px;
+  border: none;
+  background-color: #2e7d32;
+  color: white;
+  border-radius: 8px;
   cursor: pointer;
-  flex-shrink: 0;
   transition: background 0.2s ease;
-  width: auto;
 }
 
-
-
-
-
 #send-button:hover {
-  background-color: #2e7d32;
+  background-color: #256429;
 }
 
 #room-link {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   font-size: 0.9rem;
-  color: #999;
+  color: #aaa;
   word-break: break-word;
   display: flex;
   align-items: center;
@@ -106,33 +102,34 @@ h2 {
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #212121;
+  background: #1a1a1a;
   padding: 1rem;
   border-radius: 10px;
-  box-shadow: 0 0 10px #000;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
   z-index: 999;
   display: none;
   flex-direction: column;
   align-items: center;
   animation: fadeIn 0.3s ease-out;
-  color: #e0e0e0;
+  color: #f0f0f0;
 }
 
 .toast button {
   margin: 0.5rem 0.25rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.2rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 0.85rem;
 }
 
 .accept {
-  background-color: #388e3c;
+  background-color: #2e7d32;
   color: white;
 }
 
 .reject {
-  background-color: #c62828;
+  background-color: #b71c1c;
   color: white;
 }
 
@@ -141,24 +138,22 @@ h2 {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-
-    .destroy-room {
-  margin-top: 1rem;
+.destroy-room {
+  margin-top: 1.25rem;
   background-color: #c62828;
   color: white;
   border: none;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.7rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   display: none;
   transition: background 0.2s ease;
-  width: auto;
 }
 
 .destroy-room:hover {
-  background-color: #b71c1c;
+  background-color: #a32020;
 }
 
   </style>
